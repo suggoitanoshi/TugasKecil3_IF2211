@@ -35,7 +35,7 @@ func parseFile(filename string) (Graph, error) {
 		}
 		currentLine := scanner.Text()
 		split := strings.Split(currentLine, " ")
-		if len(split) != nodeCount {
+		if len(split) < 3 {
 			return graph, errors.New("malformed file")
 		}
 		x, err := strconv.ParseFloat(split[0], 64)
@@ -46,7 +46,7 @@ func parseFile(filename string) (Graph, error) {
 		if err != nil {
 			return graph, err
 		}
-		graph.addNode(split[2], x, y)
+		graph.addNode(strings.Join(split[2:], " "), x, y)
 	}
 	// adjacency matrix
 	for i := 0; i < nodeCount; i++ {

@@ -43,10 +43,7 @@ func (node *Node) addEdge(otherNode Node, weight float64) {
 }
 
 func (node *Node) removeEdge(otherNode Node) {
-	if _, ok := node.Edges[otherNode.Name]; ok {
-		// delete only if exists
-		delete(node.Edges, otherNode.Name)
-	}
+	delete(node.Edges, otherNode.Name)
 }
 
 type Graph struct {

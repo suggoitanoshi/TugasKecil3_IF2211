@@ -19,7 +19,7 @@ func (coord *Coordinate) initCoord(x, y float64) {
 	coord.Y = y
 }
 
-func (coord *Coordinate) distanceTo(other Coordinate) float64 {
+func (coord Coordinate) distanceTo(other Coordinate) float64 {
 	return math.Hypot(coord.X-other.X, coord.Y-other.Y)
 }
 
@@ -73,7 +73,7 @@ func (graph *Graph) clearGraph() {
 	graph.NodeNames = []NodeName{}
 }
 
-func (graph *Graph) getNodeNameAtIndex(i int) NodeName {
+func (graph Graph) getNodeNameAtIndex(i int) NodeName {
 	return graph.NodeNames[i]
 }
 
@@ -93,7 +93,7 @@ func (graph *Graph) addEdge(nameA, nameB string, weight float64) error {
 	return nil
 }
 
-func (graph *Graph) showGraph() {
+func (graph Graph) showGraph() {
 	for name, node := range graph.Nodes {
 		fmt.Printf("%s: ", name)
 		for adjacent, weight := range node.Edges {
@@ -101,4 +101,8 @@ func (graph *Graph) showGraph() {
 		}
 		fmt.Printf("\n")
 	}
+}
+
+func (graph Graph) getNodeEuclideanDistance(nodeA, nodeB NodeName) float64 {
+	return graph.Nodes[nodeA].coord.distanceTo(graph.Nodes[nodeB].coord)
 }

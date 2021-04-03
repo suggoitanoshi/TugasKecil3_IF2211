@@ -1,4 +1,4 @@
-package main
+package graph
 
 import (
 	"errors"
@@ -14,12 +14,18 @@ type Coordinate struct {
 	X, Y float64
 }
 
+func NewCoord(x, y float64) Coordinate {
+	coord := Coordinate{}
+	coord.initCoord(x, y)
+	return coord
+}
+
 func (coord *Coordinate) initCoord(x, y float64) {
 	coord.X = x
 	coord.Y = y
 }
 
-func (coord Coordinate) distanceTo(other Coordinate) float64 {
+func (coord Coordinate) DistanceTo(other Coordinate) float64 {
 	return math.Hypot(coord.X-other.X, coord.Y-other.Y)
 }
 
@@ -29,20 +35,26 @@ type Node struct {
 	Edges map[NodeName]float64
 }
 
+func NewNode(name NodeName, x, y float64) Node {
+	node := Node{}
+	node.initNode(name, NewCoord(x, y))
+	return node
+}
+
 func (node *Node) initNode(name string, coord Coordinate) {
 	node.Name = name
 	node.coord = coord
 	node.Edges = make(map[NodeName]float64)
 }
 
-func (node *Node) addEdge(otherNode Node, weight float64) {
+func (node *Node) AddEdge(otherNode Node, weight float64) {
 	if _, ok := node.Edges[otherNode.Name]; !ok {
 		// add not-yet-here edge
 		node.Edges[otherNode.Name] = weight
 	}
 }
 
-func (node *Node) removeEdge(otherNode Node) {
+func (node *Node) RemoveEdge(otherNode Node) {
 	delete(node.Edges, otherNode.Name)
 }
 
@@ -51,13 +63,17 @@ type Graph struct {
 	Nodes     map[NodeName]Node
 }
 
+func NewGraph() Graph {
+	return (&Graph{}).initGraph()
+}
+
 func (graph *Graph) initGraph() Graph {
 	graph.NodeNames = make([]NodeName, 0)
 	graph.Nodes = make(map[NodeName]Node)
 	return *graph
 }
 
-func (graph *Graph) addNode(name string, x, y float64) {
+func (graph *Graph) AddNode(name string, x, y float64) {
 	if _, ok := graph.Nodes[name]; !ok {
 		graph.NodeNames = append(graph.NodeNames, name)
 		coord := Coordinate{}
@@ -68,16 +84,16 @@ func (graph *Graph) addNode(name string, x, y float64) {
 	}
 }
 
-func (graph *Graph) clearGraph() {
+func (graph *Graph) ClearGraph() {
 	graph.Nodes = make(map[NodeName]Node)
 	graph.NodeNames = []NodeName{}
 }
 
-func (graph Graph) getNodeNameAtIndex(i int) NodeName {
+func (graph Graph) GetNodeNameAtIndex(i int) NodeName {
 	return graph.NodeNames[i]
 }
 
-func (graph *Graph) addEdge(nameA, nameB string, weight float64) error {
+func (graph *Graph) AddEdge(nameA, nameB string, weight float64) error {
 	if _, exist := graph.Nodes[nameA]; !exist {
 		return errors.New("nodeA doesn't exist")
 	}
@@ -87,22 +103,28 @@ func (graph *Graph) addEdge(nameA, nameB string, weight float64) error {
 	if nameA != nameB {
 		nodeA := graph.Nodes[nameA]
 		nodeB := graph.Nodes[nameB]
-		nodeA.addEdge(nodeB, weight)
-		nodeB.addEdge(nodeA, weight)
+		nodeA.AddEdge(nodeB, weight)
+		nodeB.AddEdge(nodeA, weight)
 	}
 	return nil
 }
 
-func (graph Graph) showGraph() {
+func (graph Graph) ToString() string {
+	var str string
 	for name, node := range graph.Nodes {
-		fmt.Printf("%s: ", name)
+		str += fmt.Sprintf("%s: ", name)
 		for adjacent, weight := range node.Edges {
-			fmt.Printf("[%s,%.4f] ", adjacent, weight)
+			str += fmt.Sprintf("[%s,%.4f] ", adjacent, weight)
 		}
-		fmt.Printf("\n")
+		str += "\n"
 	}
+	return str
 }
 
-func (graph Graph) getNodeEuclideanDistance(nodeA, nodeB NodeName) float64 {
-	return graph.Nodes[nodeA].coord.distanceTo(graph.Nodes[nodeB].coord)
+func (graph Graph) ShowGraph() {
+	fmt.Println(graph.ToString())
+}
+
+func (graph Graph) GetNodeEuclideanDistance(nodeA, nodeB NodeName) float64 {
+	return graph.Nodes[nodeA].coord.DistanceTo(graph.Nodes[nodeB].coord)
 }

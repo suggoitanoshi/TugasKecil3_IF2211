@@ -3,6 +3,7 @@ package graph
 import (
 	"errors"
 	"math"
+	"tanoshi/prioqueue"
 )
 
 type nodePath struct {
@@ -13,7 +14,7 @@ type nodePath struct {
 
 func Astar(graph Graph, start NodeName, end NodeName) ([]NodeName, float64, error) {
 	cost := 0.0
-	queue := make([]nodePath, 0)
+	queue := prioqueue.NewPQ()
 	path := make([]NodeName, 0)
 
 	if _, exists := graph.Nodes[start]; !exists {
@@ -22,20 +23,12 @@ func Astar(graph Graph, start NodeName, end NodeName) ([]NodeName, float64, erro
 	if _, exists := graph.Nodes[end]; !exists {
 		return path, math.NaN(), errors.New("invalid ending node")
 	}
-	queue = append(queue, nodePath{start, nil, 0, graph.GetNodeEuclideanDistance(start, end)})
-	for len(queue) != 0 {
-		smallestF := math.Inf(1)
-		var curr *nodePath
-		var idx int
-		for i, v := range queue {
-			f := v.cost + v.heur
-			if f < smallestF {
-				curr = &queue[i]
-				idx = i
-				smallestF = f
-			}
-		}
-		queue = append(queue[idx+1:], queue[:idx]...)
+	heur := graph.GetNodeEuclideanDistance(start, end)
+	startPath := &nodePath{start, nil, 0, heur}
+	queue.Enqueue(startPath, heur)
+	visited := make(map[string]*nodePath)
+	for !queue.IsEmpty() {
+		curr := queue.Dequeue().(*nodePath)
 		if curr.name == end {
 			for curr != nil {
 				path = append([]NodeName{curr.name}, path...)
@@ -46,23 +39,29 @@ func Astar(graph Graph, start NodeName, end NodeName) ([]NodeName, float64, erro
 		}
 		for adj, weight := range graph.Nodes[curr.name].Edges {
 			lastF := math.Inf(1)
-			idx := -1
-			for i, n := range queue {
-				if n.name == adj {
-					lastF = n.heur
-					idx = i
-				}
-			}
 			f := curr.cost + weight + graph.GetNodeEuclideanDistance(adj, end)
+			if v, ok := visited[adj]; !ok {
+				visited[adj] = &nodePath{adj, curr, curr.cost + weight, f}
+			} else {
+				lastF = v.heur
+			}
 			if f < lastF {
-				if idx == -1 {
-					idx = len(queue)
-					queue = append(queue, nodePath{})
-					queue[idx].name = adj
+				visited[adj].cost = curr.cost + weight
+				visited[adj].before = curr
+				visited[adj].heur = f
+				idx := -1
+				for i, n := range queue.GetElements() {
+					if n.(*nodePath).name == adj {
+						idx = i
+						break
+					}
 				}
-				queue[idx].heur = f
-				queue[idx].cost = curr.cost + weight
-				queue[idx].before = curr
+				if idx == -1 {
+					queue.Enqueue(visited[adj], f)
+				} else {
+					last := queue.DequeueElementAt(idx).(*nodePath)
+					queue.Enqueue(last, f)
+				}
 			}
 		}
 	}

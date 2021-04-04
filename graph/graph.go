@@ -25,13 +25,32 @@ func (coord *Coordinate) initCoord(x, y float64) {
 	coord.Y = y
 }
 
-func (coord Coordinate) DistanceTo(other Coordinate) float64 {
+func (coord Coordinate) EuclideanDistanceTo(other Coordinate) float64 {
 	return math.Hypot(coord.X-other.X, coord.Y-other.Y)
+}
+
+func degToRad(deg float64) float64 {
+	return deg * math.Pi / 180
+}
+
+func (coord Coordinate) toRad() (float64, float64) {
+	return degToRad(coord.X), degToRad(coord.Y)
+}
+
+func haversine(rad float64) float64 {
+	return math.Pow(math.Sin(rad/2), 2)
+}
+
+func (coord Coordinate) HaversineDistanceTo(other Coordinate) float64 {
+	aLat, aLon := coord.toRad()
+	bLat, bLon := other.toRad()
+	h := haversine(bLat-aLat) + math.Cos(aLat)*math.Cos(bLat)*haversine(bLon-aLon)
+	return 2 * 6371.0 * math.Asin(math.Sqrt(h))
 }
 
 type Node struct {
 	Name  NodeName
-	coord Coordinate
+	Coord Coordinate
 	Edges map[NodeName]float64
 }
 
@@ -43,7 +62,7 @@ func NewNode(name NodeName, x, y float64) Node {
 
 func (node *Node) initNode(name string, coord Coordinate) {
 	node.Name = name
-	node.coord = coord
+	node.Coord = coord
 	node.Edges = make(map[NodeName]float64)
 }
 
@@ -54,13 +73,10 @@ func (node *Node) AddEdge(otherNode Node, weight float64) {
 	}
 }
 
-func (node *Node) RemoveEdge(otherNode Node) {
-	delete(node.Edges, otherNode.Name)
-}
-
 type Graph struct {
 	NodeNames []NodeName
 	Nodes     map[NodeName]Node
+	IsCartes  bool
 }
 
 func NewGraph() Graph {
@@ -70,6 +86,7 @@ func NewGraph() Graph {
 func (graph *Graph) initGraph() Graph {
 	graph.NodeNames = make([]NodeName, 0)
 	graph.Nodes = make(map[NodeName]Node)
+	graph.IsCartes = true
 	return *graph
 }
 
@@ -82,6 +99,19 @@ func (graph *Graph) AddNode(name string, x, y float64) {
 		node.initNode(name, coord)
 		graph.Nodes[name] = node
 	}
+}
+
+func (graph *Graph) RemoveNode(name string) {
+	for e := range graph.Nodes[name].Edges {
+		delete(graph.Nodes[e].Edges, name)
+	}
+	for i, n := range graph.NodeNames {
+		if n == name {
+			graph.NodeNames = append(graph.NodeNames[:i], graph.NodeNames[i+1:]...)
+			break
+		}
+	}
+	delete(graph.Nodes, name)
 }
 
 func (graph *Graph) ClearGraph() {
@@ -125,6 +155,18 @@ func (graph Graph) ShowGraph() {
 	fmt.Println(graph.ToString())
 }
 
+func (graph Graph) GetNodeDistance(nodeA, nodeB NodeName) float64 {
+	if graph.IsCartes {
+		return graph.GetNodeEuclideanDistance(nodeA, nodeB)
+	} else {
+		return graph.GetNodeHaversineDistance(nodeA, nodeB)
+	}
+}
+
 func (graph Graph) GetNodeEuclideanDistance(nodeA, nodeB NodeName) float64 {
-	return graph.Nodes[nodeA].coord.DistanceTo(graph.Nodes[nodeB].coord)
+	return graph.Nodes[nodeA].Coord.EuclideanDistanceTo(graph.Nodes[nodeB].Coord)
+}
+
+func (graph Graph) GetNodeHaversineDistance(nodeA, nodeB NodeName) float64 {
+	return graph.Nodes[nodeA].Coord.HaversineDistanceTo(graph.Nodes[nodeB].Coord)
 }

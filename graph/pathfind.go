@@ -23,7 +23,7 @@ func Astar(graph Graph, start NodeName, end NodeName) ([]NodeName, float64, erro
 	if _, exists := graph.Nodes[end]; !exists {
 		return path, math.NaN(), errors.New("invalid ending node")
 	}
-	heur := graph.GetNodeEuclideanDistance(start, end)
+	heur := graph.GetNodeDistance(start, end)
 	startPath := &nodePath{start, nil, 0, heur}
 	queue.Enqueue(startPath, heur)
 	visited := make(map[string]*nodePath)
@@ -39,7 +39,7 @@ func Astar(graph Graph, start NodeName, end NodeName) ([]NodeName, float64, erro
 		}
 		for adj, weight := range graph.Nodes[curr.name].Edges {
 			lastF := math.Inf(1)
-			f := curr.cost + weight + graph.GetNodeEuclideanDistance(adj, end)
+			f := curr.cost + weight + graph.GetNodeDistance(adj, end)
 			if v, ok := visited[adj]; !ok {
 				visited[adj] = &nodePath{adj, curr, curr.cost + weight, f}
 			} else {

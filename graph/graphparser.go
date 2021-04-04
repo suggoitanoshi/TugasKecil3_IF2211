@@ -6,17 +6,15 @@ import (
 	"strings"
 )
 
-func ParseContent(content string) (Graph, error) {
-	g := NewGraph()
-
+func (g *Graph) ParseContent(content string) error {
 	lines := strings.Split(content, "\n")
 	nodeCount, err := strconv.Atoi(lines[0])
 	if err != nil {
-		return g, err
+		return err
 	}
 
 	if len(lines) < (2*nodeCount)+1 {
-		return g, errors.New("malformed file")
+		return errors.New("malformed file")
 	}
 
 	// initialize nodes
@@ -24,15 +22,15 @@ func ParseContent(content string) (Graph, error) {
 		currentLine := lines[i+1]
 		split := strings.Split(currentLine, " ")
 		if len(split) < 3 {
-			return g, errors.New("malformed file")
+			return errors.New("malformed file")
 		}
 		x, err := strconv.ParseFloat(split[0], 64)
 		if err != nil {
-			return g, err
+			return err
 		}
 		y, err := strconv.ParseFloat(split[1], 64)
 		if err != nil {
-			return g, err
+			return err
 		}
 		g.AddNode(strings.Join(split[2:], " "), x, y)
 	}
@@ -41,22 +39,22 @@ func ParseContent(content string) (Graph, error) {
 		currentLine := lines[i+nodeCount+1]
 		split := strings.Split(currentLine, " ")
 		if len(split) != nodeCount {
-			return g, errors.New("malformed file")
+			return errors.New("malformed file")
 		}
 		currentNode := g.GetNodeNameAtIndex(i)
 		for index, value := range split {
 			currWeight, err := strconv.ParseFloat(value, 64)
 			if err != nil {
-				return g, err
+				return err
 			}
 			if currWeight < 0 {
-				return g, errors.New("malformed file")
+				return errors.New("malformed file")
 			}
 			pairedNode := g.GetNodeNameAtIndex(index)
 			if currWeight > 0 {
-				g.AddEdge(currentNode, pairedNode, currWeight)
+				g.AddEdge(currentNode, pairedNode, g.GetNodeDistance(currentNode, pairedNode))
 			}
 		}
 	}
-	return g, nil
+	return nil
 }

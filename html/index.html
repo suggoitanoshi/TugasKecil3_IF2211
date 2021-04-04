@@ -2,13 +2,51 @@
 	<head>
 		<meta charset="utf-8"/>
 		<script src="wasm_exec.js"></script>
+		<style>
+			body{
+				font-family: 'Helvetica';
+				font-size: 24px;
+			}
+			input, select, button{
+				font-size: 1em;
+			}
+			#map{
+				height: 55em;
+			}
+			#output{
+				height: 55em;
+			}
+		</style>
+		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+			integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+			crossorigin=""/>
+		<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+			integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+			crossorigin=""></script>
+		<script src="https://www.unpkg.com/sigma@1.2.1/build/sigma.min.js"></script>
+	</head>
+	<body>
+		<button id="toggle">Toggle map&le;-&ge;file</button>
+		<span>Cost: <span id="cost"></span></span>
+		<div id="file-io">
+
+			<input type="file" id="fileIn">
+			<select id="from"></select>
+			<select id="to"></select>
+			<button id="go">Go!</button>
+			<div id="output">
+		</div>
+		</div>
+		<div id="map-cont">
+			<div id='map'></div>
+			<button id="get-int">Get Intersections!</button>
+		</div>
 		<script>
 			const go = new Go();
 			WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
 				go.run(result.instance);
 			});
 		</script>
-	</head>
-	<body></body>
+	</body>
 </html>
 

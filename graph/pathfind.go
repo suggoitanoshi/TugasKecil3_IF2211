@@ -30,9 +30,9 @@ func Astar(graph Graph, start NodeName, end NodeName) ([]NodeName, float64, erro
 	for !queue.IsEmpty() {
 		curr := queue.Dequeue().(*nodePath)
 		if curr.name == end {
+			cost = curr.cost
 			for curr != nil {
 				path = append([]NodeName{curr.name}, path...)
-				cost += curr.cost
 				curr = curr.before
 			}
 			return path, cost, nil

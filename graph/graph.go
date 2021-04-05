@@ -86,7 +86,7 @@ func NewGraph() Graph {
 func (graph *Graph) initGraph() Graph {
 	graph.NodeNames = make([]NodeName, 0)
 	graph.Nodes = make(map[NodeName]Node)
-	graph.IsCartes = true
+	graph.IsCartes = false
 	return *graph
 }
 

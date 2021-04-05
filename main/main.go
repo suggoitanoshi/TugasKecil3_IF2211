@@ -18,6 +18,10 @@ var theMap js.Value
 var fromMap, firstPick bool
 var firstID string
 
+const defaultColor = "#4287f5"
+const highlightColor = "#f54e42"
+const pathColor = "#39e684"
+
 type mapOverlay struct {
 	nodesInMap   map[string]js.Value
 	edgesInMap   map[string]js.Value
@@ -123,20 +127,20 @@ func startAlgo(this js.Value, ev []js.Value) interface{} {
 		if !fromMap {
 			edges := sigmaGraph.Call("edges")
 			for i := 0; i < edges.Length(); i++ {
-				edges.Index(i).Set("color", "#00f")
+				edges.Index(i).Set("color", defaultColor)
 			}
 			nodes := sigmaGraph.Call("nodes")
 			for i := 0; i < nodes.Length(); i++ {
-				nodes.Index(i).Set("color", "#00f")
+				nodes.Index(i).Set("color", defaultColor)
 			}
 			for i, n := range path {
 				node := sigmaGraph.Call("nodes", n)
-				node.Set("color", "#f0f")
+				node.Set("color", highlightColor)
 				if i < len(path)-1 {
 					edge := sigmaGraph.Call("edges", path[i]+"-"+path[i+1])
-					edge.Set("color", "#f0f")
+					edge.Set("color", pathColor)
 					edge = sigmaGraph.Call("edges", path[i+1]+"-"+path[i])
-					edge.Set("color", "#f0f")
+					edge.Set("color", pathColor)
 				}
 			}
 			sigmaGraph.Call("nodes", path[0]).Set("color", "#0f0")
@@ -165,6 +169,11 @@ func handleFile(this js.Value, ev []js.Value) interface{} {
 			}
 		} else {
 			createMapGraph()
+			avg := []interface{}{}
+			for _, n := range g.Nodes {
+				avg = append(avg, []interface{}{n.Coord.X, n.Coord.Y})
+			}
+			theMap.Call("fitBounds", avg)
 		}
 		return nil
 	}))
@@ -267,12 +276,12 @@ func createMapGraph() {
 		if len(n.Edges) == 0 {
 			g.RemoveNode(n.Name)
 		} else {
-			currentMapOverlay.nodesInMap[n.Name] = js.Global().Get("L").Call("circle", []interface{}{n.Coord.X, n.Coord.Y}, map[string]interface{}{"color": "skyblue", "radius": 5})
+			currentMapOverlay.nodesInMap[n.Name] = js.Global().Get("L").Call("circle", []interface{}{n.Coord.X, n.Coord.Y}, map[string]interface{}{"color": defaultColor, "radius": 5})
 			currentMapOverlay.nodesInMap[n.Name].Set("nodeID", n.Name)
 			for e, _ := range n.Edges {
 				fromPair := []interface{}{n.Coord.X, n.Coord.Y}
 				toPair := []interface{}{g.Nodes[e].Coord.X, g.Nodes[e].Coord.Y}
-				currentMapOverlay.edgesInMap[n.Name+"-"+e] = js.Global().Get("L").Call("polyline", []interface{}{fromPair, toPair}, map[string]interface{}{"color": "skyblue"})
+				currentMapOverlay.edgesInMap[n.Name+"-"+e] = js.Global().Get("L").Call("polyline", []interface{}{fromPair, toPair}, map[string]interface{}{"color": defaultColor})
 			}
 		}
 	}
@@ -293,11 +302,11 @@ func mapNodeClick(this js.Value, ev []js.Value) interface{} {
 	if !nID.IsUndefined() {
 		if firstPick {
 			for _, n := range currentMapOverlay.nodesInMap {
-				n.Call("setStyle", map[string]interface{}{"color": "skyblue"})
+				n.Call("setStyle", map[string]interface{}{"color": defaultColor})
 			}
 			currentMapOverlay.pathOver.Call("clearLayers")
 		}
-		currentMapOverlay.nodesInMap[nID.String()].Call("setStyle", map[string]interface{}{"color": "red"})
+		currentMapOverlay.nodesInMap[nID.String()].Call("setStyle", map[string]interface{}{"color": highlightColor})
 		if firstPick {
 			firstID = nID.String()
 			firstPick = false
@@ -309,7 +318,7 @@ func mapNodeClick(this js.Value, ev []js.Value) interface{} {
 					fromP := g.Nodes[path[i]].Coord
 					points = append(points, []interface{}{fromP.X, fromP.Y})
 				}
-				js.Global().Get("L").Call("polyline", points, map[string]interface{}{"color": "red"}).Call("addTo", currentMapOverlay.pathOver)
+				js.Global().Get("L").Call("polyline", points, map[string]interface{}{"color": pathColor}).Call("addTo", currentMapOverlay.pathOver)
 			}
 			cost.Set("innerText", pathCost)
 			firstPick = true

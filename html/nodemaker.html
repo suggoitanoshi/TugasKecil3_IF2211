@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+			integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+			crossorigin=""/>
+		<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+			integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+			crossorigin=""></script>
+    <style>
+      #map{
+        height: 55em;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="addnode">add Node</button>
+    <button id="editnode">set node name</button>
+    <input type="text" id="nodename" placeholder="node name">
+    <button id="addedge">add edge (continuous)</button>
+    <button id="removenode">remove node</button>
+    <button id="removeedge">remove edge</button>
+    <button id="clear">clear</button>
+    <button id="export">Export</button>
+    <span id="status"></span>
+    <div>
+      <div id="map">
+      </div>
+    </div>
+    <script>
+      let status = document.querySelector("#status")
+      status.innerText = "Select Action"
+      let act = "free";
+      document.querySelector("#addnode").addEventListener("click", (e) => {
+        status.innerText = "Choose point"
+        act = "cnode";
+      })
+      document.querySelector("#addedge").addEventListener("click", (e) => {
+        status.innerText = "Choose node 1"
+        act = "cedgen1"
+      })
+      document.querySelector("#editnode").addEventListener("click", (e) => {
+        act = "editnode"
+        status.innerText = "Select node to set name";
+      })
+
+      let cont = document.querySelector("#bruh")
+      let map = L.map("map", {
+        center: [0.7893, 113.9213],
+        zoom: 5
+      })
+      let nodes = {}
+      let edges = {}
+      let first = null;
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map)
+      let fG = L.featureGroup().addTo(map)
+
+      let nodename = document.querySelector("#nodename")
+      map.on("click", (e) => {
+        let pos = map.mouseEventToLatLng(e.originalEvent);
+        if(act == "cnode"){
+          let nname = nodename.value;
+          if(nname === ''){
+            nname = "unnamed"+pos.lat.toFixed(5)+"-"+pos.lng.toFixed(5);
+          }
+          let c = L.circle(pos, {color: 'red', radius: 5}).addTo(fG)
+          c.nodename = nname;
+          nodes[nname] = c;
+          nodename.value = "";
+        }
+      })
+      fG.on("click", (e)=>{
+        let nm = e.sourceTarget.nodename;
+        if(typeof nm !== 'undefined'){
+          if(act == "cedgen1"){
+            first = nm
+            act = "cedgen2"
+            status.innerText = "Choose node 2"
+          }
+          else if(act == "cedgen2"){
+            let pl = L.polyline([nodes[first].getLatLng(), nodes[nm].getLatLng()]).addTo(map)
+            if(typeof edges[first] === 'undefined') edges[first] = {}
+            if(typeof edges[nm] === 'undefined') edges[nm] = {}
+            edges[first][nm] = pl;
+            edges[nm][first] = pl
+            first = nm;
+          }
+          else if(act == 'removenode'){
+            if(typeof edges[nm] !== 'undefined'){
+              Object.entries(edges[nm]).forEach(e => {
+                let [k, v] = e
+                delete edges[k][nm]
+                v.remove()
+              })
+            }
+            delete edges[nm]
+            nodes[nm].remove()
+            delete nodes[nm]
+          }
+          else if(act == 'editnode'){
+            newname = nodename.value;
+            if(nm != newname){
+              nodes[newname] = nodes[nm];
+              nodes[newname].nodename = newname
+              delete nodes[nm]
+              if(typeof edges[nm] !== 'undefined'){
+                edges[newname] = edges[nm];
+                Object.keys(edges[nm]).forEach(v => {
+                  edges[v][newname] = edges[v][nm]
+                  if(typeof edges[v][nm] !== 'undefined')
+                    delete edges[v][nm]
+                })
+                delete edges[nm]
+              }
+            }
+            nodename.value = ""
+            status.innerText = "Select Action"
+          }
+          else if(act == "removeedge1"){
+            first = nm;
+            act = "removeedge2";
+            status.innerText = "Select node 2 for edge removal"
+          }
+          else if(act == "removeedge2"){
+            if(Object.keys(edges[first]).includes(nm)){
+              edges[first][nm].remove()
+              delete edges[first][nm]
+              delete edges[nm][first]
+            }
+            status.innerText = "Select node 1 for edge removal"
+            act = "removeedge1"
+          }
+        }
+      })
+
+      document.querySelector("#removenode").addEventListener("click", (e) => {
+        act = "removenode";
+        status.innerText = "Choose node"
+      })
+
+      document.querySelector("#removeedge").addEventListener("click", (e) =>{
+        act = "removeedge1";
+        status.innerText = "Choose node 1 for edge removal"
+      })
+
+      document.querySelector("#export").addEventListener("click", (e)=>{
+        let str = "";
+        str += Object.keys(nodes).length + "\n";
+        let nodeIdx = Object.keys(nodes);
+        for(let i = 0; i < nodeIdx.length; i++){
+          let latlng = nodes[nodeIdx[i]].getLatLng()
+          str += latlng.lat + " " + latlng.lng + " " + nodeIdx[i] + "\n";
+        }
+        for(let i = 0; i < nodeIdx.length; i++){
+          let current = nodeIdx[i];
+          for(let j = 0; j < nodeIdx.length; j++){
+            let pair = nodeIdx[j];
+            if(Object.keys(edges).includes(current) && Object.keys(edges[current]).includes(pair))
+              str += "1"
+            else str += "0"
+            if(j < nodeIdx.length-1) str += " "
+          }
+          str += "\n"
+        }
+        const a = document.createElement('a')
+        const file = new Blob([str], {type: 'text/plain'})
+        a.href = URL.createObjectURL(file)
+        a.download = "output.txt"
+        a.click();
+        URL.revokeObjectURL(a.href)
+      })
+
+      document.querySelector("#clear").addEventListener("click", (e)=>{
+        nodes = {}
+        edges = {}
+        fG.clearLayers()
+      })
+    </script>
+  </body>
+</html>

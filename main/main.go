@@ -187,15 +187,15 @@ func getGraphFromMap() {
 	  .st > -> .stnodes;
 	  .stnodes < -> .allclose;
 	  way.allclose[highway]->.allclose;
-	  (.allclose; - .st;)->.close;
-	  .close>->.close_down;
-	  node.close_down.stnodes;
-	  out skel;
-	  way.close;
-	  out skel;
+		(.allclose; - .st;)->.close;
+		.close>->.close_down;
+		(node.close_down.stnodes;.st;);
+		out skel qt;
 	}`, bbox.Call("getSouth").Float(), bbox.Call("getWest").Float(), bbox.Call("getNorth").Float(), bbox.Call("getEast").Float()))
 	g.ClearGraph()
 	currentMapOverlay.overlayLayer.Call("clearLayers")
+	currentMapOverlay.edgesInMap = map[string]js.Value{}
+	currentMapOverlay.nodesInMap = map[string]js.Value{}
 	g.IsCartes = false
 	for id, node := range result.Nodes {
 		if node.Lat != 0 && node.Lon != 0 {
@@ -203,29 +203,30 @@ func getGraphFromMap() {
 		}
 	}
 	for _, way := range result.Ways {
-		for _, nodeA := range way.Nodes {
-			idA := strconv.Itoa(int(nodeA.ID))
-			if _, ok := g.Nodes[idA]; ok {
-				for _, nodeB := range way.Nodes {
-					idB := strconv.Itoa(int(nodeB.ID))
-					if idA != idB {
-						if _, ok := g.Nodes[idB]; ok {
-							dist := g.GetNodeDistance(idA, idB)
-							if dist > .025 {
-								g.AddEdge(idA, idB, dist)
-								g.AddEdge(idB, idA, dist)
-							} else {
-								for e, w := range g.Nodes[idA].Edges {
-									if _, ok := g.Nodes[idB].Edges[e]; !ok {
-										g.AddEdge(idB, e, w)
-										g.AddEdge(e, idB, w)
-									}
-								}
-								g.RemoveNode(idA)
-							}
-						}
-					}
+		lastID := ""
+		for idx := 0; idx < len(way.Nodes); idx++ {
+			cID := strconv.Itoa(int(way.Nodes[idx].ID))
+			if _, ok := g.Nodes[cID]; ok {
+				if lastID == "" {
+					lastID = cID
+					continue
 				}
+				idB := strconv.Itoa(int(way.Nodes[idx].ID))
+				dist := g.GetNodeDistance(lastID, idB)
+				g.AddEdge(lastID, idB, dist)
+				g.AddEdge(idB, lastID, dist)
+				lastID = idB
+			}
+		}
+	}
+	for name, node := range g.Nodes {
+		for e, w := range node.Edges {
+			if w < 0.02 {
+				for an, aw := range g.Nodes[e].Edges {
+					g.AddEdge(name, an, aw)
+					g.AddEdge(an, name, aw)
+				}
+				g.RemoveNode(e)
 			}
 		}
 	}
@@ -235,14 +236,18 @@ func getGraphFromMap() {
 		} else {
 			currentMapOverlay.nodesInMap[n.Name] = js.Global().Get("L").Call("circle", []interface{}{n.Coord.X, n.Coord.Y}, map[string]interface{}{"color": "skyblue", "radius": 5})
 			currentMapOverlay.nodesInMap[n.Name].Set("nodeID", n.Name)
-			currentMapOverlay.nodesInMap[n.Name].Call("addTo", currentMapOverlay.overlayLayer)
 			for e, _ := range n.Edges {
 				fromPair := []interface{}{n.Coord.X, n.Coord.Y}
 				toPair := []interface{}{g.Nodes[e].Coord.X, g.Nodes[e].Coord.Y}
 				currentMapOverlay.edgesInMap[n.Name+"-"+e] = js.Global().Get("L").Call("polyline", []interface{}{fromPair, toPair}, map[string]interface{}{"color": "skyblue"})
-				currentMapOverlay.edgesInMap[n.Name+"-"+e].Call("addTo", currentMapOverlay.overlayLayer)
 			}
 		}
+	}
+	for _, edge := range currentMapOverlay.edgesInMap {
+		edge.Call("addTo", currentMapOverlay.overlayLayer)
+	}
+	for _, node := range currentMapOverlay.nodesInMap {
+		node.Call("addTo", currentMapOverlay.overlayLayer)
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 	"syscall/js"
 	"tanoshi/graph"
 
+	"github.com/davvo/mercator"
 	"github.com/serjvanilla/go-overpass"
 )
 
@@ -51,7 +52,7 @@ func main() {
 		if !t.IsUndefined() {
 			if t.String() == "globe" {
 				g.IsCartes = false
-			} else if t.String() == "planar" {
+			} else {
 				g.IsCartes = true
 			}
 		}
@@ -78,9 +79,11 @@ func main() {
 			mapCont.Get("style").Set("display", "block")
 			sigmaGraph.Call("clear")
 			output.Get("style").Set("display", "none")
+			g.IsCartes = false
 		} else {
 			mapCont.Get("style").Set("display", "none")
 			output.Get("style").Set("display", "block")
+			g.IsCartes = selectType.Get("value").String() != "globe"
 		}
 		return nil
 	}))
@@ -152,36 +155,51 @@ func handleFile(this js.Value, ev []js.Value) interface{} {
 	files.Index(0).Call("text").Call("then", js.FuncOf(func(this js.Value, ev []js.Value) interface{} {
 		clearAllGraph()
 		err := g.ParseContent(ev[0].String())
-		if err == nil {
-			for _, v := range g.NodeNames {
-				createOpt(&fromSelect, v)
-				createOpt(&toSelect, v)
-			}
-			sigmaGraph.Call("clear")
-			for name, node := range g.Nodes {
-				sigmaGraph.Call("addNode", map[string]interface{}{
-					"id":    name,
-					"label": name,
-					"x":     node.Coord.X,
-					"y":     node.Coord.Y,
-					"size":  1,
-					"color": "#00f",
-				})
-			}
-			for name, node := range g.Nodes {
-				for adj, _ := range node.Edges {
-					sigmaGraph.Call("addEdge", map[string]interface{}{
-						"id":     name + "-" + adj,
-						"source": name,
-						"target": adj,
-					})
+		if !fromMap {
+			createSigmaGraph()
+			if err == nil {
+				for _, v := range g.NodeNames {
+					createOpt(&fromSelect, v)
+					createOpt(&toSelect, v)
 				}
 			}
-			sigma.Call("refresh")
+		} else {
+			createMapGraph()
 		}
 		return nil
 	}))
 	return nil
+}
+
+func createSigmaGraph() {
+	sigmaGraph.Call("clear")
+	for name, node := range g.Nodes {
+		var displayX, displayY float64
+		if g.IsCartes {
+			displayX, displayY = node.Coord.X, node.Coord.Y
+		} else {
+			displayX, displayY = mercator.LatLonToMeters(node.Coord.X, node.Coord.Y)
+		}
+		sigmaGraph.Call("addNode", map[string]interface{}{
+			"id":    name,
+			"label": name,
+			"x":     displayX,
+			"y":     displayY,
+			"size":  1,
+			"color": "#00f",
+		})
+	}
+	for name, node := range g.Nodes {
+		for adj, w := range node.Edges {
+			sigmaGraph.Call("addEdge", map[string]interface{}{
+				"id":     name + "-" + adj,
+				"label":  w,
+				"source": name,
+				"target": adj,
+			})
+		}
+	}
+	sigma.Call("refresh")
 }
 
 func createOpt(el *js.Value, v string) {
@@ -241,6 +259,10 @@ func getGraphFromMap() {
 			}
 		}
 	}
+	createMapGraph()
+}
+
+func createMapGraph() {
 	for _, n := range g.Nodes {
 		if len(n.Edges) == 0 {
 			g.RemoveNode(n.Name)

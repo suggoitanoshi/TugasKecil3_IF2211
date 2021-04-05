@@ -1,2 +1,6 @@
+github.com/davvo/mercator v0.0.0-20170614175334-fca336d3adb2 h1:1+mVV+RtxRz4FbUjjkhFJv1h3Voxui+2dUXB1C/uX7Y=
+github.com/davvo/mercator v0.0.0-20170614175334-fca336d3adb2/go.mod h1:c00fibs8nLSdh4VHiNuhCXoqo6CwA7VuUifdEXKdbbY=
+github.com/im7mortal/UTM v1.2.0 h1:+zEEbRNrhM8QUspF6G+iOgZ2L7wLXOppdv09FgDES/w=
+github.com/im7mortal/UTM v1.2.0/go.mod h1:2NjXqikKdBoolkoo3OEDLoxWW5thIIP4Wr76RBAtrYU=
 github.com/serjvanilla/go-overpass v0.0.0-20161128190845-345e5be5cf20 h1:30EWx5RpuafFwy5f+Hmwid58wP37NykFp3odFMgGluo=
 github.com/serjvanilla/go-overpass v0.0.0-20161128190845-345e5be5cf20/go.mod h1:eWfTa/q4E7SSBUc9BfvdciTZi1DGTAxgAXcIhTMkm1Q=

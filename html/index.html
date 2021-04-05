@@ -27,9 +27,12 @@
 	</head>
 	<body>
 		<button id="toggle">Toggle map&le;-&ge;file</button>
-		<span>Cost: <span id="cost"></span></span>
+		<span>Cost: <span id="cost"></span>km</span>
 		<div id="file-io">
-
+			<select id="type">
+				<option value="globe">Globe</option>
+				<option value="planar">Planar</option>
+			</select>
 			<input type="file" id="fileIn">
 			<select id="from"></select>
 			<select id="to"></select>

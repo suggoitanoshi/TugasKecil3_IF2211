@@ -40,6 +40,24 @@ func main() {
 	toSelect = document.Call("querySelector", "#to")
 	output = document.Call("querySelector", "#file-io")
 
+	selectType := document.Call("querySelector", "#type")
+	if selectType.Get("value").String() == "globe" {
+		g.IsCartes = false
+	} else {
+		g.IsCartes = true
+	}
+	selectType.Call("addEventListener", "change", js.FuncOf(func(this js.Value, ev []js.Value) interface{} {
+		t := ev[0].Get("target").Get("value")
+		if !t.IsUndefined() {
+			if t.String() == "globe" {
+				g.IsCartes = false
+			} else if t.String() == "planar" {
+				g.IsCartes = true
+			}
+		}
+		return nil
+	}))
+
 	theMap = js.Global().Get("L").Call("map", "map")
 	theMap.Call("setView", []interface{}{0.7893, 113.9213}, 5)
 	js.Global().Get("L").Call("tileLayer", "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").Call("addTo", theMap)
@@ -132,13 +150,9 @@ func startAlgo(this js.Value, ev []js.Value) interface{} {
 func handleFile(this js.Value, ev []js.Value) interface{} {
 	files := ev[0].Get("target").Get("files")
 	files.Index(0).Call("text").Call("then", js.FuncOf(func(this js.Value, ev []js.Value) interface{} {
-		var err error
-		g.ClearGraph()
-		g.IsCartes = true
-		err = g.ParseContent(ev[0].String())
+		clearAllGraph()
+		err := g.ParseContent(ev[0].String())
 		if err == nil {
-			fromSelect.Set("innerHTML", "")
-			toSelect.Set("innerHTML", "")
 			for _, v := range g.NodeNames {
 				createOpt(&fromSelect, v)
 				createOpt(&toSelect, v)
@@ -192,10 +206,7 @@ func getGraphFromMap() {
 		(node.close_down.stnodes;.st;);
 		out skel qt;
 	}`, bbox.Call("getSouth").Float(), bbox.Call("getWest").Float(), bbox.Call("getNorth").Float(), bbox.Call("getEast").Float()))
-	g.ClearGraph()
-	currentMapOverlay.overlayLayer.Call("clearLayers")
-	currentMapOverlay.edgesInMap = map[string]js.Value{}
-	currentMapOverlay.nodesInMap = map[string]js.Value{}
+	clearAllGraph()
 	g.IsCartes = false
 	for id, node := range result.Nodes {
 		if node.Lat != 0 && node.Lon != 0 {
@@ -283,4 +294,13 @@ func mapNodeClick(this js.Value, ev []js.Value) interface{} {
 		}
 	}
 	return nil
+}
+
+func clearAllGraph() {
+	g.ClearGraph()
+	currentMapOverlay.overlayLayer.Call("clearLayers")
+	currentMapOverlay.edgesInMap = map[string]js.Value{}
+	currentMapOverlay.nodesInMap = map[string]js.Value{}
+	fromSelect.Set("innerHTML", "")
+	toSelect.Set("innerHTML", "")
 }

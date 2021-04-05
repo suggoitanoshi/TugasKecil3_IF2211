@@ -21,6 +21,9 @@ var firstID string
 const defaultColor = "#4287f5"
 const highlightColor = "#f54e42"
 const pathColor = "#39e684"
+const defaultWeight = 5
+const defaultRadius = 5
+const emphRadius = 10
 
 type mapOverlay struct {
 	nodesInMap   map[string]js.Value
@@ -276,12 +279,12 @@ func createMapGraph() {
 		if len(n.Edges) == 0 {
 			g.RemoveNode(n.Name)
 		} else {
-			currentMapOverlay.nodesInMap[n.Name] = js.Global().Get("L").Call("circle", []interface{}{n.Coord.X, n.Coord.Y}, map[string]interface{}{"color": defaultColor, "radius": 5})
+			currentMapOverlay.nodesInMap[n.Name] = js.Global().Get("L").Call("circleMarker", []interface{}{n.Coord.X, n.Coord.Y}, map[string]interface{}{"color": defaultColor, "radius": defaultRadius, "weight": defaultWeight})
 			currentMapOverlay.nodesInMap[n.Name].Set("nodeID", n.Name)
 			for e, _ := range n.Edges {
 				fromPair := []interface{}{n.Coord.X, n.Coord.Y}
 				toPair := []interface{}{g.Nodes[e].Coord.X, g.Nodes[e].Coord.Y}
-				currentMapOverlay.edgesInMap[n.Name+"-"+e] = js.Global().Get("L").Call("polyline", []interface{}{fromPair, toPair}, map[string]interface{}{"color": defaultColor})
+				currentMapOverlay.edgesInMap[n.Name+"-"+e] = js.Global().Get("L").Call("polyline", []interface{}{fromPair, toPair}, map[string]interface{}{"color": defaultColor, "weight": defaultWeight})
 			}
 		}
 	}
@@ -303,6 +306,7 @@ func mapNodeClick(this js.Value, ev []js.Value) interface{} {
 		if firstPick {
 			for _, n := range currentMapOverlay.nodesInMap {
 				n.Call("setStyle", map[string]interface{}{"color": defaultColor})
+				n.Call("setRadius", defaultRadius)
 			}
 			currentMapOverlay.pathOver.Call("clearLayers")
 		}
@@ -317,8 +321,9 @@ func mapNodeClick(this js.Value, ev []js.Value) interface{} {
 				for i := 0; i < len(path); i++ {
 					fromP := g.Nodes[path[i]].Coord
 					points = append(points, []interface{}{fromP.X, fromP.Y})
+					currentMapOverlay.nodesInMap[path[i]].Call("setStyle", map[string]interface{}{"color": highlightColor})
 				}
-				js.Global().Get("L").Call("polyline", points, map[string]interface{}{"color": pathColor}).Call("addTo", currentMapOverlay.pathOver)
+				js.Global().Get("L").Call("polyline", points, map[string]interface{}{"color": pathColor, "weight": defaultWeight}).Call("addTo", currentMapOverlay.pathOver)
 			}
 			cost.Set("innerText", pathCost)
 			firstPick = true

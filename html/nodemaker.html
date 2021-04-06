@@ -84,12 +84,14 @@
             status.innerText = "Choose node 2"
           }
           else if(act == "cedgen2"){
-            let pl = L.polyline([nodes[first].getLatLng(), nodes[nm].getLatLng()]).addTo(lG)
-            if(typeof edges[first] === 'undefined') edges[first] = {}
-            if(typeof edges[nm] === 'undefined') edges[nm] = {}
-            edges[first][nm] = pl;
-            edges[nm][first] = pl
-            first = nm;
+            if(nm !== first){
+              let pl = L.polyline([nodes[first].getLatLng(), nodes[nm].getLatLng()]).addTo(lG)
+              if(typeof edges[first] === 'undefined') edges[first] = {}
+              if(typeof edges[nm] === 'undefined') edges[nm] = {}
+              edges[first][nm] = pl;
+              edges[nm][first] = pl
+              first = nm;
+            }
           }
           else if(act == 'removenode'){
             if(typeof edges[nm] !== 'undefined'){

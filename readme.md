@@ -7,9 +7,9 @@ Implementasi algoritma A* dalam menentukan jalan.
   - [Deskripsi Umum](#deskripsi-umum)
   - [Teknologi yang Digunakan](#teknologi-yang-digunakan)
   - [Persiapan/Menjalankan Program](#persiapanmenjalankan-program)
+  - [Detil Penggunaan](#detil-penggunaan)
   - [Demo](#demo)
   - [Author](#author)
-
 ## Deskripsi Umum
 Proyek ini adalah proyek yang menggunakan algoritma A* pada graf untuk mencari
 jalan terpendek antar dua simpul. Proyek ini ditulis dengan bahasa golang.
@@ -46,6 +46,18 @@ web disarankan menggunakan OS Linux atau menggunakan msys2 di windows.
     4. jalankan server, serve out: `go run server.go -dir=out`
 
 
+## Detil Penggunaan
+Antarmuka web dibagi 2 bagian besar, yaitu dengan map dan tanpa map. untuk
+bagian tanpa map penggunaannya cukup _straightforward_, yaitu dengan (0.)
+Memilih mode graf (planar = jarak euclidean, globe = jarak geodesic) (1.)
+Memilih berkas yang akan dibaca, (2.) Memilih node asal dan tujuan, dan
+terakhir (3.) Mengklik tombol `Go!` supaya algoritma A* dieksekusi.
+Untuk penggunaan bagian dengan map, input graf lagi-lagi dapat diambil dari
+berkas, seperti pada (1.). Namun juga, input dapat diambil secara otomatis
+dengan mengklik `Get Intersection!`, yang akan mengambil semua persimpangan
+yang terlihat di layar. untuk memilih node awal dan tujuan, klik pada
+lingkaran yang merepresentasikan node. Algoritma akan jalan secara otomatis
+untuk setiap 2 node yang terpilih.
 ## Demo
 Load without map:
 ![Load without map](screenshot/planar_load.png)

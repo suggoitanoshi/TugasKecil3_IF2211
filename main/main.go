@@ -23,7 +23,6 @@ const highlightColor = "#f54e42"
 const pathColor = "#39e684"
 const defaultWeight = 5
 const defaultRadius = 5
-const emphRadius = 10
 
 type mapOverlay struct {
 	nodesInMap   map[string]js.Value
@@ -83,13 +82,13 @@ func main() {
 	toggle.Call("addEventListener", "click", js.FuncOf(func(this js.Value, ev []js.Value) interface{} {
 		fromMap = !fromMap
 		if fromMap {
-			mapCont.Get("style").Set("display", "block")
+			mapCont.Get("style").Set("display", "")
 			sigmaGraph.Call("clear")
 			output.Get("style").Set("display", "none")
 			g.IsCartes = false
 		} else {
 			mapCont.Get("style").Set("display", "none")
-			output.Get("style").Set("display", "block")
+			output.Get("style").Set("display", "")
 			g.IsCartes = selectType.Get("value").String() != "globe"
 		}
 		return nil
@@ -281,7 +280,7 @@ func createMapGraph() {
 		} else {
 			currentMapOverlay.nodesInMap[n.Name] = js.Global().Get("L").Call("circleMarker", []interface{}{n.Coord.X, n.Coord.Y}, map[string]interface{}{"color": defaultColor, "radius": defaultRadius, "weight": defaultWeight})
 			currentMapOverlay.nodesInMap[n.Name].Set("nodeID", n.Name)
-			for e, _ := range n.Edges {
+			for e := range n.Edges {
 				fromPair := []interface{}{n.Coord.X, n.Coord.Y}
 				toPair := []interface{}{g.Nodes[e].Coord.X, g.Nodes[e].Coord.Y}
 				currentMapOverlay.edgesInMap[n.Name+"-"+e] = js.Global().Get("L").Call("polyline", []interface{}{fromPair, toPair}, map[string]interface{}{"color": defaultColor, "weight": defaultWeight})

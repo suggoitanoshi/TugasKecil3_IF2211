@@ -2,9 +2,13 @@
 Implementasi algoritma A* dalam menentukan jalan.
 
 ## Isi
-[Deskripsi](#deskripsi-umum)
-[Teknologi](#teknologi-yang-digunakan)
-[Menjalankan](#persiapanmenjalankan-program)
+- [Tanoshi](#tanoshi)
+  - [Isi](#isi)
+  - [Deskripsi Umum](#deskripsi-umum)
+  - [Teknologi yang Digunakan](#teknologi-yang-digunakan)
+  - [Persiapan/Menjalankan Program](#persiapanmenjalankan-program)
+  - [Demo](#demo)
+  - [Author](#author)
 
 ## Deskripsi Umum
 Proyek ini adalah proyek yang menggunakan algoritma A* pada graf untuk mencari
@@ -40,3 +44,17 @@ web disarankan menggunakan OS Linux atau menggunakan msys2 di windows.
     2. copy file `wasm_exec.js` dari GOROOT ke out: `cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" out/`
     3. compile `main.go`: `$env:GOOS="js"; $env:GOARCH="wasm"; go build -o out/main.wasm main/main.wasm`
     4. jalankan server, serve out: `go run server.go -dir=out`
+
+
+## Demo
+Load without map:
+![Load without map](screenshot/planar_load.png)
+Pathfinding without map:
+![Path without map](screenshot/planar_path.png)
+Load with map:
+![Load with map](screenshot/path.png)
+Pathfinding with map:
+![Path with map](screenshot/path.png)
+
+## Author
+Fransiskus Febryan Suryawan - 13519124

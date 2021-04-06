@@ -80,6 +80,10 @@ Load with map:
 ![Load with map](screenshot/path.png)
 Pathfinding with map:
 ![Path with map](screenshot/path.png)
+Load from API:
+![Load from API](screenshot/overpass_load.png)
+Pathfinding from API:
+![Path from API](screenshot/overpass_path.png)
 
 ## Author
 Fransiskus Febryan Suryawan - 13519124

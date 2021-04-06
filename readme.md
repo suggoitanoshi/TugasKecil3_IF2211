@@ -58,6 +58,19 @@ dengan mengklik `Get Intersection!`, yang akan mengambil semua persimpangan
 yang terlihat di layar. untuk memilih node awal dan tujuan, klik pada
 lingkaran yang merepresentasikan node. Algoritma akan jalan secara otomatis
 untuk setiap 2 node yang terpilih.
+
+Untuk membuat berkas masukan, gunakan alat `nodemaker.html`. Cara mengaksesnya
+adalah dengan mengakses `localhost:8000/nodemaker.html` setelah menjalankan
+sesuai dengan [instruksi](#persiapanmenjalankan-program). Penggunaan alat
+tersebut cukup sederhana, yaitu memasuki mode tambah node dengan mengklik
+`add node`, lalu mengklik titik-titik yang akan dijadikan node di peta.
+Selanjutnya, pembuatan edge antar node dapat dilakukan dengan mengklik
+`add edge`. Sistem penambahan edge adalah mengklik node awal, lalu mengklik
+node selanjutnya. Node selanjutnya kemudian dijadikan sebagai node awal, dan
+proses diulang. Jika ingin menghapus node, gunakan `remove node` lalu klik node
+yang ingin dihapus. Jika ingin menghapus edge, gunakan `remove edge` lalu klik
+kedua node yang dihubungkan oleh edge. Jika ingin menghapus graf, klik `clear`.
+Jika sudah selesai, maka graf dapat di-export dengan mengklik `export`.
 ## Demo
 Load without map:
 ![Load without map](screenshot/planar_load.png)

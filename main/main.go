@@ -124,17 +124,19 @@ func startAlgo(this js.Value, ev []js.Value) interface{} {
 	if fromSelect.Get("value").String() == "" || toSelect.Get("value").String() == "" {
 		return nil
 	}
-	path, pathCost, err := graph.Astar(g, fromSelect.Get("value").String(), toSelect.Get("value").String())
-	if err == nil {
-		if !fromMap {
-			edges := sigmaGraph.Call("edges")
-			for i := 0; i < edges.Length(); i++ {
-				edges.Index(i).Set("color", defaultColor)
-			}
-			nodes := sigmaGraph.Call("nodes")
-			for i := 0; i < nodes.Length(); i++ {
-				nodes.Index(i).Set("color", defaultColor)
-			}
+	path, pathCost, _ := graph.Astar(g, fromSelect.Get("value").String(), toSelect.Get("value").String())
+	if !fromMap {
+		edges := sigmaGraph.Call("edges")
+		for i := 0; i < edges.Length(); i++ {
+			edges.Index(i).Set("color", defaultColor)
+		}
+		nodes := sigmaGraph.Call("nodes")
+		for i := 0; i < nodes.Length(); i++ {
+			nodes.Index(i).Set("color", defaultColor)
+		}
+		if len(path) == 0 {
+			cost.Set("innerText", "Tidak ada jalur!")
+		} else {
 			for i, n := range path {
 				node := sigmaGraph.Call("nodes", n)
 				node.Set("color", highlightColor)
@@ -150,8 +152,6 @@ func startAlgo(this js.Value, ev []js.Value) interface{} {
 			sigma.Call("refresh")
 			cost.Set("innerText", pathCost)
 		}
-	} else {
-		output.Set("innerText", err)
 	}
 	return nil
 }
@@ -161,21 +161,25 @@ func handleFile(this js.Value, ev []js.Value) interface{} {
 	files.Index(0).Call("text").Call("then", js.FuncOf(func(this js.Value, ev []js.Value) interface{} {
 		clearAllGraph()
 		err := g.ParseContent(ev[0].String())
-		if !fromMap {
-			createSigmaGraph()
-			if err == nil {
-				for _, v := range g.NodeNames {
-					createOpt(&fromSelect, v)
-					createOpt(&toSelect, v)
-				}
-			}
+		if err != nil {
+			fmt.Println(err)
 		} else {
-			createMapGraph()
-			avg := []interface{}{}
-			for _, n := range g.Nodes {
-				avg = append(avg, []interface{}{n.Coord.X, n.Coord.Y})
+			if !fromMap {
+				createSigmaGraph()
+				if err == nil {
+					for _, v := range g.NodeNames {
+						createOpt(&fromSelect, v)
+						createOpt(&toSelect, v)
+					}
+				}
+			} else {
+				createMapGraph()
+				avg := []interface{}{}
+				for _, n := range g.Nodes {
+					avg = append(avg, []interface{}{n.Coord.X, n.Coord.Y})
+				}
+				theMap.Call("fitBounds", avg)
 			}
-			theMap.Call("fitBounds", avg)
 		}
 		return nil
 	}))
@@ -324,7 +328,11 @@ func mapNodeClick(this js.Value, ev []js.Value) interface{} {
 				}
 				js.Global().Get("L").Call("polyline", points, map[string]interface{}{"color": pathColor, "weight": defaultWeight}).Call("addTo", currentMapOverlay.pathOver)
 			}
-			cost.Set("innerText", pathCost)
+			if len(path) == 0 {
+				cost.Set("innerText", "Tidak ada jalur!")
+			} else {
+				cost.Set("innerText", pathCost)
+			}
 			firstPick = true
 		}
 	}

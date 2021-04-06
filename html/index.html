@@ -3,18 +3,77 @@
 		<meta charset="utf-8"/>
 		<script src="wasm_exec.js"></script>
 		<style>
+			:root{
+				--main-color: #34b4eb;
+				--sub-color: #5289a1;
+				--light-color: #b1e4fa;
+			}
 			body{
 				font-family: 'Helvetica';
-				font-size: 24px;
+				font-size: 16px;
+				padding: 0;
+				margin: 0;
 			}
 			input, select, button{
 				font-size: 1em;
 			}
-			#map{
-				height: 55em;
+			#map, #output{
+				height: 75vh;
 			}
-			#output{
-				height: 55em;
+			.wrapper{
+				display: flex;
+				flex-flow: column;
+			}
+			.header, .body, .footer{
+				padding: .5em .7em;
+			}
+			.header{
+				flex: 0 0 auto;
+				background: var(--main-color);
+				text-align: center;
+			}
+			.header h1{
+				margin: 0;
+			}
+			.body{
+				flex: 0 1 auto;
+				display: flex;
+				flex-flow: column;
+			}
+			
+			.row{
+				display: flex;
+				flex-flow: row;
+				justify-content: space-around;
+			}
+			.column{
+				display: flex;
+				flex-flow: column;
+			}
+
+			input[type="button"], button{
+				padding: .5em .7em;
+				--shadow-size: .5em;
+				border: none;
+				background-color: var(--light-color);
+				transition: .1s ease-out;
+				border-bottom-width: var(--shadow-size);
+				border-bottom-color: var(--sub-color);
+				border-bottom-style: solid;
+				border-top-style: solid;
+				border-top-color: var(--light-color);
+				border-top-width: 0;
+			}
+
+			input[type="button"]:hover, input[type="button"]:active, button:hover, button:active{
+				border-bottom-width: 0;
+				border-top-width: var(--shadow-size);
+			}
+
+			input[type="button"]:active, button:active{
+				background-color: var(--sub-color);
+				border-top-color: var(--sub-color);
+				color: var(--light-color);
 			}
 		</style>
 		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
@@ -26,23 +85,36 @@
 		<script src="https://www.unpkg.com/sigma@1.2.1/build/sigma.min.js"></script>
 	</head>
 	<body>
-		<button id="toggle">Toggle map&le;-&ge;file</button>
-		<input type="file" id="fileIn">
-		<span>Cost: <span id="cost"></span>km</span>
-		<div id="file-io">
-			<select id="type">
-				<option value="globe">Globe</option>
-				<option value="planar">Planar</option>
-			</select>
-			<select id="from"></select>
-			<select id="to"></select>
-			<button id="go">Go!</button>
-			<div id="output">
-		</div>
-		</div>
-		<div id="map-cont">
-			<div id='map'></div>
-			<button id="get-int">Get Intersections!</button>
+		<div class='wrapper'>
+			<div class='header'>
+				<h1>Tanoshi</h1>
+				<small>A* Pathfinding</small>
+			</div>
+			<div class='body'>
+				<button id="toggle">Toggle map&le;-&ge;file</button>
+				<div class='row'>
+					<div><label for="fileIn">File: </label><input type="file" id="fileIn"></div>
+					<span>Cost: <span id="cost"></span>km</span>
+				</div>
+				<div id="file-io">
+					<div class='row'>
+						<select id="type">
+							<option value="globe">Globe</option>
+							<option value="planar">Planar</option>
+						</select>
+						<div><label for="from">Dari: </label><select id="from"></select></div>
+						<div><label for="to">Ke: </label><select id="to"></select></div>
+						<button id="go">Go!</button>
+					</div>
+					<div id="output">
+				</div>
+				</div>
+				<div id="map-cont" class='column'>
+					<div id='map'></div>
+					<button id="get-int">Get Intersections!</button>
+				</div>
+			</div>
+			<div class='footer'></div>
 		</div>
 		<script>
 			const go = new Go();

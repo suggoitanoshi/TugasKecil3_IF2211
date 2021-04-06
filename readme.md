@@ -8,6 +8,7 @@ Implementasi algoritma A* dalam menentukan jalan.
   - [Teknologi yang Digunakan](#teknologi-yang-digunakan)
   - [Persiapan/Menjalankan Program](#persiapanmenjalankan-program)
   - [Detil Penggunaan](#detil-penggunaan)
+  - [Format berkas masukan](#format-berkas-masukan)
   - [Demo](#demo)
   - [Author](#author)
 ## Deskripsi Umum
@@ -71,6 +72,16 @@ proses diulang. Jika ingin menghapus node, gunakan `remove node` lalu klik node
 yang ingin dihapus. Jika ingin menghapus edge, gunakan `remove edge` lalu klik
 kedua node yang dihubungkan oleh edge. Jika ingin menghapus graf, klik `clear`.
 Jika sudah selesai, maka graf dapat di-export dengan mengklik `export`.
+
+## Format berkas masukan
+Format berkas masukan yang digunakan:
+```
+<jumlah node>
+<lat/x node 1> <lon/y node 1> <nama node>
+...
+<matriks adjacency>
+```
+
 ## Demo
 Load without map:
 ![Load without map](screenshot/planar_load.png)

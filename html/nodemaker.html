@@ -54,6 +54,7 @@
       let edges = {}
       let first = null;
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map)
+      let lG = L.layerGroup().addTo(map)
       let fG = L.featureGroup().addTo(map)
 
       let nodename = document.querySelector("#nodename")
@@ -79,7 +80,7 @@
             status.innerText = "Choose node 2"
           }
           else if(act == "cedgen2"){
-            let pl = L.polyline([nodes[first].getLatLng(), nodes[nm].getLatLng()]).addTo(map)
+            let pl = L.polyline([nodes[first].getLatLng(), nodes[nm].getLatLng()]).addTo(lG)
             if(typeof edges[first] === 'undefined') edges[first] = {}
             if(typeof edges[nm] === 'undefined') edges[nm] = {}
             edges[first][nm] = pl;
@@ -175,6 +176,7 @@
         nodes = {}
         edges = {}
         fG.clearLayers()
+        lG.clearLayers()
       })
     </script>
   </body>

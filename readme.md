@@ -45,6 +45,7 @@ web disarankan menggunakan OS Linux atau menggunakan msys2 di windows.
     2. copy file `wasm_exec.js` dari GOROOT ke out: `cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" out/`
     3. compile `main.go`: `$env:GOOS="js"; $env:GOARCH="wasm"; go build -o out/main.wasm main/main.wasm`
     4. jalankan server, serve out: `go run server.go -dir=out`
+4. Akses program di `http://localhost:8000`
 
 
 ## Detil Penggunaan
